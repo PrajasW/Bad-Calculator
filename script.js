@@ -1,19 +1,20 @@
 const num1 = document.getElementById('num1')
 const num2 = document.getElementById('num2')
 const result = document.getElementById('result')
+const transaction = document.getElementById('transaction')
 
-const contractAddress = "0x5162989dE32Be43db6f012c6B257cF751b434409";
+const contractAddress = "0x9294824C5de32905adDFcF9BAd69cc86a29b82BA";
 const contractABI = [
 	{
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "a",
+				"name": "_a",
 				"type": "uint256"
 			},
 			{
 				"internalType": "uint256",
-				"name": "b",
+				"name": "_b",
 				"type": "uint256"
 			}
 		],
@@ -25,19 +26,19 @@ const contractABI = [
 				"type": "uint256"
 			}
 		],
-		"stateMutability": "pure",
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "a",
+				"name": "_a",
 				"type": "uint256"
 			},
 			{
 				"internalType": "uint256",
-				"name": "b",
+				"name": "_b",
 				"type": "uint256"
 			}
 		],
@@ -49,19 +50,19 @@ const contractABI = [
 				"type": "uint256"
 			}
 		],
-		"stateMutability": "pure",
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "a",
+				"name": "_a",
 				"type": "uint256"
 			},
 			{
 				"internalType": "uint256",
-				"name": "b",
+				"name": "_b",
 				"type": "uint256"
 			}
 		],
@@ -73,19 +74,19 @@ const contractABI = [
 				"type": "uint256"
 			}
 		],
-		"stateMutability": "pure",
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "a",
+				"name": "_a",
 				"type": "uint256"
 			},
 			{
 				"internalType": "uint256",
-				"name": "b",
+				"name": "_b",
 				"type": "uint256"
 			}
 		],
@@ -97,11 +98,68 @@ const contractABI = [
 				"type": "uint256"
 			}
 		],
-		"stateMutability": "pure",
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "getA",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getB",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getOperation",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getResult",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	}
 ]
-async function getContract(a,b,operation){
+async function getContractForWrite(a,b,operation){
 	const provider = new ethers.providers.Web3Provider(window.ethereum,'sepolia')
 	await provider.send("eth_requestAccounts", [])
 	const accounts = await provider.listAccounts();
@@ -119,29 +177,50 @@ async function getContract(a,b,operation){
 	if(operation == "div"){
 		return contract.div(a,b);
 	}
-
 }
 async function add(){
 	const val1 = parseInt(num1.value);
 	const val2 = parseInt(num2.value);
-	const sum = await getContract(val1,val2,"sum")
+	const sum = await getContractForWrite(val1,val2,"sum")
 	result.innerHTML = sum.toString();
+	await loadTransaction();
 }
 async function subtract(){
 	const val1 = parseInt(num1.value);
 	const val2 = parseInt(num2.value);
-	const diff = await getContract(val1,val2,"sub")
+	const diff = await getContractForWrite(val1,val2,"sub")
 	result.innerHTML = diff.toString();
+	await loadTransaction();
 }
 async function multiply(){
 	const val1 = parseInt(num1.value);
 	const val2 = parseInt(num2.value);
-	const prod = await getContract(val1,val2,"multi");
+	const prod = await getContractForWrite(val1,val2,"multi");
 	result.innerHTML = prod.toString()
+	await loadTransaction();
 }
 async function divide(){
 	const val1 = parseInt(num1.value);
 	const val2 = parseInt(num2.value);
-	const sum = await getContract(val1,val2,"div");
+	const sum = await getContractForWrite(val1,val2,"div");
 	result.innerHTML = sum.toString()
+	await loadTransaction();
 }
+async function loadTransaction(){
+	const provider = new ethers.providers.Web3Provider(window.ethereum,'sepolia')
+	await provider.send("eth_requestAccounts", [])
+	const accounts = await provider.listAccounts();
+	const signer = provider.getSigner(accounts[0]);
+	const contract = new ethers.Contract(contractAddress, contractABI, signer);
+	const a = await contract.getA();
+	const b = await contract.getB();
+	const result = await contract.getResult();
+	const operation = await contract.getOperation();
+	if(operation == "genesis"){
+		transaction.innerHTML = `transactions yet`
+	}
+	else{
+		transaction.innerHTML = `${a} ${operation} ${b} is ${result}`
+	}
+}
+loadTransaction();
