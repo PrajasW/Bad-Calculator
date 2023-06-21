@@ -1,6 +1,5 @@
 const num1 = document.getElementById('num1')
 const num2 = document.getElementById('num2')
-const result = document.getElementById('result')
 const transaction = document.getElementById('transaction')
 
 const contractAddress = "0x9294824C5de32905adDFcF9BAd69cc86a29b82BA";
@@ -221,6 +220,8 @@ async function loadTransaction(){
 	}
 	else{
 		transaction.innerHTML = `${a} ${operation} ${b} is ${result}`
+		num1.innerHTML = a;
+		num2.innerHTML = b;
 	}
 }
 loadTransaction();
